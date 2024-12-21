@@ -105,3 +105,17 @@ button {
 button:hover {
     background-color: #2980b9;
 }
+
+form {
+    margin-bottom: 20px;
+}
+
+form input, form button {
+    margin: 5px;
+}
+
+.form-tarea {
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}

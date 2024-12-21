@@ -5,66 +5,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Proyectos</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .completed {
+            color: green;
+            font-weight: bold;
+        }
+
+        .pending {
+            color: red;
+            font-weight: bold;
+        }
+
+    </style>
 </head>
 <body>
     <h1>Gestión de Proyectos</h1>
+
+    <div class="form-tarea">
+        <input type="text" id="nombre-tarea" placeholder="Nombre de la tarea">
+        <input type="text" id="descripcion-tarea" placeholder="Descripción de la tarea">
+        <input type="date" id="fecha-limite-tarea">
+        <button onclick="agregarTarea()">Agregar Tarea</button>
+    </div>
+
     <div id="proyectos-container">
         <!-- Los datos se cargarán aquí dinámicamente -->
     </div>
 
     <script>
-        // Cargar datos del archivo base.json
-        fetch('base.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        // Datos JSON directamente incluidos
+        let data = {
+            "proyectos": [
+                {
+                    "id": 1,
+                    "nombre": "Proyecto Clínica Odontológica",
+                    "descripcion": "Desarrollo de un sistema de gestión para la clínica.",
+                    "tareas": [
+                        {
+                            "id": 1,
+                            "nombre": "Diseñar la base de datos",
+                            "descripcion": "Definir las tablas, campos y relaciones para almacenar la información.",
+                            "estado_completo": false,
+                            "fecha_limite": "2024-12-01"
+                        },
+                        {
+                            "id": 2,
+                            "nombre": "Implementar backend",
+                            "descripcion": "Crear las APIs necesarias para gestionar las operaciones.",
+                            "estado_completo": true,
+                            "fecha_limite": "2024-12-15"
+                        },
+                        {
+                            "id": 3,
+                            "nombre": "Diseño de UI/UX",
+                            "descripcion": "Desarrollar una interfaz amigable para los usuarios.",
+                            "estado_completo": true,
+                            "fecha_limite": "2024-11-20"
+                        }
+                    ]
                 }
-                return response.json();
-            })
-            .then(data => {
-                const proyectos = data.proyectos;
-                const container = document.getElementById('proyectos-container');
+            ]
+        };
 
-                // Iterar sobre los proyectos
-                proyectos.forEach(proyecto => {
-                    // Crear un div para cada proyecto
-                    const proyectoDiv = document.createElement('div');
-                    proyectoDiv.innerHTML = `
-                        <h2>${proyecto.nombre}</h2>
-                        <p>${proyecto.descripcion}</p>
-                        <table>
-                            <thead>
+        const proyectos = data.proyectos;
+        const container = document.getElementById('proyectos-container');
+
+        function renderProyectos() {
+            container.innerHTML = '';
+            proyectos.forEach((proyecto, index) => {
+                const proyectoDiv = document.createElement('div');
+                proyectoDiv.innerHTML = `
+                    <h2>${proyecto.nombre} </h2>
+                    <p>${proyecto.descripcion}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Fecha Límite</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${proyecto.tareas.map((tarea, tareaIndex) => `
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Nombre</th>
-                                    <th>Descripción</th>
-                                    <th>Estado</th>
-                                    <th>Fecha Límite</th>
+                                    <td>${tarea.id}</td>
+                                    <td>${tarea.nombre}</td>
+                                    <td>${tarea.descripcion}</td>
+                                    <td class="${tarea.estado_completo ? 'completed' : 'pending'}">
+                                        ${tarea.estado_completo ? 'Completado' : 'Pendiente'}
+                                    </td>
+                                    <td>${tarea.fecha_limite}</td>
+                                    <td><button onclick="eliminarTarea(${index}, ${tareaIndex})">Eliminar</button></td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                ${proyecto.tareas.map(tarea => `
-                                    <tr>
-                                        <td>${tarea.id}</td>
-                                        <td>${tarea.nombre}</td>
-                                        <td>${tarea.descripcion}</td>
-                                        <td class="${tarea.estado_completo ? 'completed' : 'pending'}">
-                                            ${tarea.estado_completo ? 'Completado' : 'Pendiente'}
-                                        </td>
-                                        <td>${tarea.fecha_limite}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                    container.appendChild(proyectoDiv);
-                });
-            })
-            .catch(error => {
-                console.error('Error al cargar el archivo JSON:', error);
-                const container = document.getElementById('proyectos-container');
-                container.innerHTML = `<p style="color: red;">No se pudieron cargar los datos. Por favor, verifica el archivo JSON.</p>`;
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                container.appendChild(proyectoDiv);
             });
+        }
+
+        function agregarTarea() {
+            const nombreTarea = document.getElementById(`nombre-tarea`).value;
+            const descripcionTarea = document.getElementById(`descripcion-tarea`).value;
+            const fechaLimiteTarea = document.getElementById(`fecha-limite-tarea`).value;
+
+            const proyecto = proyectos[0]; // Solo agrega tareas al primer proyecto
+
+            if (proyecto && nombreTarea && descripcionTarea && fechaLimiteTarea) {
+                const nuevaTarea = {
+                    id: proyecto.tareas.length + 1,
+                    nombre: nombreTarea,
+                    descripcion: descripcionTarea,
+                    estado_completo: false,
+                    fecha_limite: fechaLimiteTarea
+                };
+
+                proyecto.tareas.push(nuevaTarea);
+                renderProyectos();
+
+                document.getElementById(`nombre-tarea`).value = '';
+                document.getElementById(`descripcion-tarea`).value = '';
+                document.getElementById(`fecha-limite-tarea`).value = '';
+            } else {
+                alert('Por favor, completa todos los campos correctamente.');
+            }
+        }  
+        function eliminarTarea(proyectoIndex, tareaIndex) {
+            proyectos[proyectoIndex].tareas.splice(tareaIndex, 1);
+            renderProyectos();
+        }
+
+        // Render inicial
+        renderProyectos();
     </script>
 </body>
 </html>
