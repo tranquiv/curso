@@ -1,41 +1,70 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La BatiPage</title>
-    <!-- Enlace al archivo CSS externo -->
+    <title>Gestión de Proyectos</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>¡Hola! Soy Batman</h1>
-        <p>Bienvenido a la BatiPresentación.</p>
-    </header>
-    <div class="botones">
-        <button onclick="location.href='#sobre-mi'">Sobre mí</button>
-        <button onclick="location.href='#proyectos'">Proyectos</button>
-        <button onclick="location.href='#contacto'">Contacto</button>
+    <h1>Gestión de Proyectos</h1>
+    <div id="proyectos-container">
+        <!-- Los datos se cargarán aquí dinámicamente -->
     </div>
 
-    <main>
-        <section id="sobre-mi">
-            <h2>Sobre mí</h2>
-            <p>Yo solo sé que no sé nada.</p>
-        </section>
-        <section id="proyectos">
-            <h2>Proyectos</h2>
-            <p>Salvar Gótica.</p>
-        </section>
-        <section id="contacto">
-            <h2>Contacto</h2>
-            <p>Email: batman2005@gmail.com</p>
-            <p>WhatsApp: +595 981965343</p>
-        </section>
-        
-    </main>
-    <footer>
-        <p>&copy; 2024 [tranquiv]</p>
-    </footer>
+    <script>
+        // Cargar datos del archivo base.json
+        fetch('base.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const proyectos = data.proyectos;
+                const container = document.getElementById('proyectos-container');
+
+                // Iterar sobre los proyectos
+                proyectos.forEach(proyecto => {
+                    // Crear un div para cada proyecto
+                    const proyectoDiv = document.createElement('div');
+                    proyectoDiv.innerHTML = `
+                        <h2>${proyecto.nombre}</h2>
+                        <p>${proyecto.descripcion}</p>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Estado</th>
+                                    <th>Fecha Límite</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${proyecto.tareas.map(tarea => `
+                                    <tr>
+                                        <td>${tarea.id}</td>
+                                        <td>${tarea.nombre}</td>
+                                        <td>${tarea.descripcion}</td>
+                                        <td class="${tarea.estado_completo ? 'completed' : 'pending'}">
+                                            ${tarea.estado_completo ? 'Completado' : 'Pendiente'}
+                                        </td>
+                                        <td>${tarea.fecha_limite}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    container.appendChild(proyectoDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error al cargar el archivo JSON:', error);
+                const container = document.getElementById('proyectos-container');
+                container.innerHTML = `<p style="color: red;">No se pudieron cargar los datos. Por favor, verifica el archivo JSON.</p>`;
+            });
+    </script>
 </body>
 </html>
